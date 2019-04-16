@@ -19,6 +19,19 @@ module.exports= {
           limit:2048  // 如果大于limit设置的大小，就单独生成图片，否则就直接加在js里面，减少http的请求
         }
       }
-    },]
+    },
+    // css-loader部分解析
+    {
+      test:/\.scss$/,
+      use:['style-loader',
+           {
+             loader:'css-loader',
+             options:{
+               importLoaders:2
+             }
+           },
+           'sass-loader',
+           'postcss-loader']
+    }]
   }
 }
