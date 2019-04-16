@@ -1,9 +1,7 @@
-body {
-  .m {
-    width: 200px;
-    height: 200px;
-    transform: translate(100px, 200px);
-    display: flex;
-    justify-content: space-around;
+body{
+  .m{
+    width:200px;
+    height:200px;
+    border:1px solid #0f0;
   }
 }
