@@ -3,13 +3,12 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 module.exports = {
   mode: 'development', // 区分是什么环境，，避免报错
+  devtool:'source-map',
   entry: {
     main:'./src/index.js',
-    sub:'./src/index.js'
   }, // 入口文件
   output: { //输出文件
-    publicPath:'http://cdn.com.cn',
-    filename: '[name].js',
+    filename: 'bundle.js',
     path: path.resolve(__dirname, 'dist') // path 会在根目录生成一个dist的文件
   },
   // 添加各种laoder 
