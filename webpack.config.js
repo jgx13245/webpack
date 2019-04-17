@@ -1,11 +1,14 @@
 const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
+const webapck = require('webpack')
 module.exports = {
   mode: 'development', // 区分是什么环境，，避免报错
   devtool:'source-map',
   devServer:{
-    contentBase:'./dist'
+    contentBase:'./dist',
+    hot:true,
+    hotOnly:true
   },
   entry: {
     main:'./src/index.js',
@@ -42,6 +45,19 @@ module.exports = {
           'sass-loader',
           'postcss-loader'
         ]
+      },
+      {
+        test: /\.css$/,
+        use: ['style-loader',
+          {
+            loader: 'css-loader',
+            options: {
+              importLoaders: 2
+            }
+          },
+          'sass-loader',
+          'postcss-loader'
+        ]
       }
     ]
   },
@@ -50,7 +66,8 @@ module.exports = {
     new HtmlWebpackPlugin({
     template: './src/index.html'
     }),
-   new CleanWebpackPlugin()
+   new CleanWebpackPlugin(),
+   new webapck.HotModuleReplacementPlugin()
   ]
 }
 

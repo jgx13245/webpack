@@ -1,38 +1,31 @@
-### webpackDevServe 提升开发效率
+### Hot Module Replacement 热模块更新
 
-1.每次修改完代码，都要重新打包才能更新蛮狠费劲
+1.怎么添加呢，假如每次修改完页面的css的样式，webapck都会把页面重新刷新一遍，有些样式是需要点击才能生效，这样就很费时间
+每次都要点击。
 
-2.在package.json里面的script，新加上一行
+2.使用HMR 可以解决
 ```
-script:{
-  "start":"webapack-dev-serve"
-}
+devServer:{
+    contentBase:'./dist',
+    hot:true，
+    hotonly:true  // 即使hmr的功能没有生效，也不让浏览器重新刷新 
+  },
 
-// 在 webpack.donfig.js里面
-devServe:{
-  // 起服务的目录
-  contentBase:'./dist'
-}
+// 最上层引入
 
-npm install webpack-dev-server -D
+const webapck =  require（’webapck‘）
 
+// 插件部分
+ plugins: [
+    new HtmlWebpackPlugin({
+    template: './src/index.html'
+    }),
+   new CleanWebpackPlugin(),
+   new webapck.HotModuleReplacementPlugin()
+  ]
 ```
-再运行的时候，就会显示localhost:8080  端口运行，直接在页面运行，修改，避免修改就要重新打包
 
-3.这就是为什么 react ,vue这些前端框架需要借用webpackd的devserver开一个web服务器的原因，如果直接用原始的打包好使用
-index.html来展示页面的话，url是file。。。。。。是不能调用ajax的，调用ajax需要一个http的服务开启才能调用。
+3.在js中的使用，
 
-4.还有好多的属性，port host proxy 看官网的这一块进行修改补充
-
-
-5总结一下
-
-```
-script:{
-  "watch":"webapck --watch", // 每次有修改，都会监听自动打包，但是没办法起一个服务器，无法调用ajax
-  "start":"webapack-dev-serve" // 主流都是用这个，好多属性功能
-  "server":"node serve.js" // 自己使用express。监听改变，自己实现webapack-dev-serve的监听功能，耗费精力。暂时不建议使用。
-}
-
-```
-链接：[https://webpack.docschina.org/configuration/dev-server/#devserver-proxy]
+假设页面上两个按钮。两个js文件模块分别控制的，一个是点击改变，一个是固定，点击的我改变了，固定的我修改了代码。页面会重新请求。那我点击
+改变的代码就会刷新，数据就没了，可以使用 module.hot 。控制，响应的模块，开启hml.  但是vue-laoder,css-loaderd都内置了这个配置。
