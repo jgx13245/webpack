@@ -29,3 +29,7 @@ const webapck =  require（’webapck‘）
 
 假设页面上两个按钮。两个js文件模块分别控制的，一个是点击改变，一个是固定，点击的我改变了，固定的我修改了代码。页面会重新请求。那我点击
 改变的代码就会刷新，数据就没了，可以使用 module.hot 。控制，响应的模块，开启hml.  但是vue-laoder,css-loaderd都内置了这个配置。
+
+
+
+[https://webpack.docschina.org/guides/hot-module-replacement/]
