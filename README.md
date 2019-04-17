@@ -1,21 +1,37 @@
-### sourceMap的基础配置
+### webpackDevServe 提升开发效率
 
-1.什么是sourcemap，
-当你文件里面的代码出错了，如果不配置sourceMap，会把报错的信息体现在，压缩完的代码里，这样就很不好，找不到错在哪里了。
-但是配置以后，会提示你错在哪个文件夹的哪一行，方便快速找到错误，映射错误文件
+1.每次修改完代码，都要重新打包才能更新蛮狠费劲
 
-2.在module.exports里面直接加上devtools:'sourceMap'，可以开启这个功能，如果配置了sourcemap.打包的速度会变慢的。
+2.在package.json里面的script，新加上一行
+```
+script:{
+  "start":"webapack-dev-serve"
+}
 
-3.使用sourcemap以后，你会发现，打包好的文件里面，有个.js.map的映射文件
+// 在 webpack.donfig.js里面
+devServe:{
+  // 起服务的目录
+  contentBase:'./dist'
+}
 
-4.官方文档 配置 里面， 有个选项 devtool.里面有很详细的使用方法，
+npm install webpack-dev-server -D
 
-（1）sourceMap.打包出一个xx.js.map的文件
+```
+再运行的时候，就会显示localhost:8080  端口运行，直接在页面运行，修改，避免修改就要重新打包
 
-（2）inline-source-map，会把map的文件取消，转换成一个base64的行字符串加在打包的js文件里面.
+3.这就是为什么 react ,vue这些前端框架需要借用webpackd的devserver开一个web服务器的原因，如果直接用原始的打包好使用
+index.html来展示页面的话，url是file。。。。。。是不能调用ajax的，调用ajax需要一个http的服务开启才能调用。
 
-（3）inline-cheap-source-map，上面的两个会把哪一行，那一列错的位置告诉我们，但是这个会把那一列去到，提高性能。
+4.还有好多的属性，port host proxy 看官网的这一块进行修改补充
 
-（4）cheap-module-eval-source-map,开发使用这个最好，全面，速度还快一点    **开发环境**
 
-（5）cheap-module-source-map，生产使用这个比较好，mode：producton   **生产环境**
+5总结一下
+
+```
+script:{
+  "watch":"webapck --watch", // 每次有修改，都会监听自动打包，但是没办法起一个服务器，无法调用ajax
+  "start":"webapack-dev-serve" // 主流都是用这个，好多属性功能
+  "server":"node serve.js" // 自己使用express。监听改变，自己实现webapack-dev-serve的监听功能，耗费精力。暂时不建议使用。
+}
+
+```

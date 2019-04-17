@@ -4,6 +4,9 @@ const CleanWebpackPlugin = require('clean-webpack-plugin');
 module.exports = {
   mode: 'development', // 区分是什么环境，，避免报错
   devtool:'source-map',
+  devServer:{
+    contentBase:'./dist'
+  },
   entry: {
     main:'./src/index.js',
   }, // 入口文件
@@ -50,3 +53,5 @@ module.exports = {
    new CleanWebpackPlugin()
   ]
 }
+
+
