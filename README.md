@@ -6,7 +6,7 @@
 
 （1）setup  找到webapck的配置，按照步骤下载，引用，
 
-（2）
+（2）基本配置和解析
 ```
 rules: [
       { test: /\.js$/, 
@@ -36,6 +36,7 @@ rules: [
 
  （3）babel/polyfill填充会把所有的es6语法转换加上，这样文件太大，我只需我运用了那些方法就填充那些方法。
       可以用bable的useBuiltIns方法
+      
      ```
      { test: /\.js$/, 
         exclude: /node_modules/,
