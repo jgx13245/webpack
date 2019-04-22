@@ -21,7 +21,12 @@ module.exports = {
   module: {
     /* url-loader和file-laoder差不多，但是url-loader不会把所有的图片打包到dist里面。会自动转成base64合成到app.js里面，有个属性，limit 
      */
-    rules: [{
+    rules: [
+      { test: /\.js$/, 
+        exclude: /node_modules/,
+        loader: "babel-loader",
+      }, 
+      {
         test: /\.(png|jpg)$/,
         use: {
           loader: 'url-loader', // 解析不同的后缀名。图片的和后缀名，vue的是vue-loader
