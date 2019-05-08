@@ -1,103 +1,178 @@
-### 使用tree shaking
+### decelopmet 和 production打包的区别
 
-#### 开发中有这种问题，我在一个模块里面建立了是几个方法，在其他模块里面引入了其中一个方法，打包的时候我们会发现模块1，里面的方法全部都在打包文件里面，这样没有必要，
-
-
-#### tree shaking 翻译成汉语的意思是 摇树的意思，意思是把我不需要引入的模块去掉
-
+#### 像上一节所提到的那样，如果我们要区分 Tree Shaking的开发环境和生产环境，那么我们每次打包的都要去更改相应的 Webpack配置文件 有没有什么办法能让我们少改一点代码呢？
 
 1.TIP
 
-> Tree Shaking是一个术语，通常用于描述移除JavaScript中未使用的代码，在开发环境中，Tree Shaking还是会起作用，但未使用的代码依然还进行打包，这是因为保存正确的source-map的缘故。
+> 区分开发环境和生产环境，最好的办法是把公用配置提取到一个配置文件，生产环境和开发环境只写自己需要的配置，在打包的时候再进行合并即可
+webpack-merge 可以帮我们做到这个事情。
 
-2.注意
-
-> Tree Shaking 只适用于ES Module语法(既通过export导出，import引入)，因为它依赖于ES Module的静态结构特性。
-
-3.步骤
-
-添加src/math.js文件： 定义两个方法并export出去
+(1)新建build/webpack.common.js： 新建build文件夹，在此文件夹下新建webpack.common.js，提起公共配置到此文件
 
 ```
-export function add(a, b) {
-  console.log(a + b);
-}
-
-export function minus(a, b) {
-  console.log(a - b);
-}
-```
-
-改写index.js：
-
-```
-import { add } from './math'
-
-add(1, 4);
-// 改写webpack.config.js： 更改 webpack 配置文件，进行 Tree Shaking配置
-
 const path = require('path');
+const htmlWebpackPlugin = require('html-webpack-plugin');
+const cleanWebpackPlugin = require('clean-webpack-plugin');
 module.exports = {
-  mode: 'development',
-  devtool: 'source-map',
   entry: {
     main: './src/index.js'
   },
-  optimization: {
-    usedExports: true
+  module: {
+    rules: [
+      {
+        test: /\.css$/,
+        use: ['style-loader','css-loader']
+      },
+      { 
+        test: /\.js$/, 
+        exclude: /node_modules/, 
+        loader: "babel-loader" 
+      }
+    ]
   },
+  plugins: [
+    new htmlWebpackPlugin({
+      template: 'src/index.html'
+    }),
+    new cleanWebpackPlugin()
+  ],
   output: {
     filename: '[name].js',
     path: path.resolve(__dirname,'dist')
   }
 }
-```
-开发环境下打包结果： 使用npm run build进行打包
+````
 
-打包结果分析
-
-虽然我们配置了 Tree Shaking，但在开发环境下，我们依然能够看到未使用过的minus方法，以下注释也清晰了说明了这一点，这是因为我们处于开发环境下打包。
+(2) 新建build/webpack.dev.js： 保留开发环境独有的配置
 
 ```
-"use strict";
-/* harmony export (binding) */ 
-__webpack_require__.d(__webpack_exports__, "a", function() { return add; });
-/* unused harmony export minus */
-function add(a, b) {
-  console.log(a + b);
+const webpack = require('webpack');
+module.exports = {
+  mode: 'development',
+  devtool: 'cheap-module-eval-source-map',
+  devServer: {
+    // 启动bundle文件夹
+    contentBase: './dist',
+    // 自动打开浏览器
+    open: true,
+    // 端口3000
+    port: 3000,
+    // 模块热更新
+    hot: true,
+    hotOnly: true
+  },
+  plugins: [
+    new webpack.HotModuleReplacementPlugin()
+  ],
+  optimization: {
+    usedExports: true
+  }
 }
-function minus(a, b) {
-  console.log(a - b);
+```
+
+(3)新建build/webpack.prod.js： 保留生产环境独有的配置
+
+```
+module.exports = {
+  mode: 'production',
+  devtool: 'cheap-module-source-map'
 }
 ```
-生产环境下打包结果： 将webpack.config.js中的Mode属性，由development改为production，再运行npm run build
+webpack-merge
 
-4.打包代码分析
+利用webpack-merge进行文件合并，它需要用 npm 进行安装
 
-这是一段add方法压缩后的代码，我们在打包后的.js文件中，并没有找到minus方法，证明在生产环境下，Tree Shaking 真正起了作用。
-
-```
-([function(e,n,r){
-  "use strict";
-  var t,o;
-  r.r(n),
-  t=1,
-  o=4,
-  console.log(t+o)
-}]);
+$ npm install webpack-merge -D
+(4)再次改造build/webpack.dev.js： 通过webpack-merge进行文件合并
 
 ```
-5.**SideEffects**
+const webpack = require('webpack');
+const merge = require('webpack-merge');
+const commonConfig = require('./webpack.common');
+const devConfig = {
+  mode: 'development',
+  devtool: 'cheap-module-eval-source-map',
+  devServer: {
+    // 启动bundle文件夹
+    contentBase: './bundle',
+    // 自动打开浏览器
+    open: true,
+    // 端口3000
+    port: 3000,
+    // 模块热更新
+    hot: true,
+    hotOnly: true
+  },
+  plugins: [
+    new webpack.HotModuleReplacementPlugin()
+  ],
+  optimization: {
+    usedExports: true
+  }
+}
+module.exports = merge(commonConfig, devConfig);
+```
 
-TIP
+(5)再次改造build/webpack.prod.js： 通过webpack-merge进行文件合并
 
-> 由于 Tree Shaking作用于所有通过import引入的文件，如果我们引入第三方库，例如：import _ from 'lodash'或者.css文件，例如import './style.css' 时，如果我们不 做限制的话，Tree Shaking将起副作用，SideEffects属性能帮我们解决这个问题：它告诉webpack，我们可以对哪些文件不做 Tree Shaking
+```
+const merge = require('webpack-merge');
+const commonConfig = require('./webpack.common');
+const prodConfig = {
+  mode: 'production',
+  devtool: 'cheap-module-source-map'
+}
+module.exports = merge(commonConfig, prodConfig);
+```
+(6)# 添加脚本命令
 
-// 修改package.json
-// 如果不希望对任何文件进行此配置，可以设置sideEffects属性值为false
-// *.css 表示 对所有css文件不做 Tree Shaking
-// @babael/polyfill 表示 对@babel/polyfill不做 Tree Shaking
-"sideEffects": [
-  "*.css",
-  "@babel/polyfill"
-],
+2.TIP
+
+> 通过更改package.json文件，添加dev和build 两个Script脚本命令
+
+"scripts": {
+  "dev": "webpack-dev-server --config ./build/webpack.dev.js",
+  "build": "webpack --config ./build/webpack.prod.js"
+},
+注意
+
+当我们运行npm run build时，dist目录打包到了build文件夹下了，这是因为我们把webpack相关的配置放到了build文件夹下后，并没有做其他配置，webpack会认为build文件夹会是根目录
+
+|-- build
+|   |-- dist
+|   |   |-- index.html
+|   |   |-- main.js
+|   |   |-- main.js.map
+|   |-- webpack.common.js
+|   |-- webpack.dev.js
+|   |-- webpack.prod.js
+|-- package-lock.json
+|-- package.json
+|-- postcss.config.js
+-- src
+    |-- index.html
+    |-- index.js
+    |-- math.js
+再次修改build/webpack.common.js： 修改output属性即可
+
+output: {
+  filename: '[name].js',
+  path: path.resolve(__dirname,'../dist')
+}
+打包结果：
+
+|-- build
+|   |-- webpack.common.js
+|   |-- webpack.dev.js
+|   |-- webpack.prod.js
+|-- dist
+|   |-- index.html
+|   |-- main.js
+|   |-- main.js.map
+|-- package-lock.json
+|-- package.json
+|-- postcss.config.js
+|-- src
+    |-- index.html
+    |-- index.js
+    |-- math.js
