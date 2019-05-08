@@ -86,6 +86,7 @@ function minus(a, b) {
   console.log(t+o)
 }]);
 
+```
 5.**SideEffects**
 
 TIP
