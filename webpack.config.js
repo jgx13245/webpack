@@ -72,8 +72,12 @@ module.exports = {
     template: './src/index.html'
     }),
    new CleanWebpackPlugin(),
-   new webapck.HotModuleReplacementPlugin()
-  ]
+   new webapck.HotModuleReplacementPlugin(),
+  ],
+  // 加上这个，代表只打包使用的模块。没有引入的就不用了
+  optimization:{
+    usedExports:true
+  }
 }
 
 
