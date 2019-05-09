@@ -7,7 +7,7 @@ module.exports = {
     main:'./src/index.js',
   }, // 入口文件
   output: { //输出文件
-    filename: 'bundle.js',
+    filename: '[name].js',
     path: path.resolve(__dirname, '../dist') // path 会在根目录生成一个dist的文件
   },
   // 添加各种laoder 
@@ -66,6 +66,11 @@ module.exports = {
     }),
    new CleanWebpackPlugin(),
   ],
+  optimization:{
+    splitChunks:{
+      chunks:'all'
+    }
+  }
 }
 
 

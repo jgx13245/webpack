@@ -1,165 +1,37 @@
-### decelopmet 和 production打包的区别
+### webpack 和coding splitting代码分割
 
-#### 像上一节所提到的那样，如果我们要区分 Tree Shaking的开发环境和生产环境，那么我们每次打包的都要去更改相应的 Webpack配置文件 有没有什么办法能让我们少改一点代码呢？
+#### 代码分割和webpack没有啥关系
 
-1.TIP
+**webpack实现代码分割有两种方式**
 
-> 区分开发环境和生产环境，最好的办法是把公用配置提取到一个配置文件，生产环境和开发环境只写自己需要的配置，在打包的时候再进行合并即可
-webpack-merge 可以帮我们做到这个事情。
+1.同步的代码。只要在webpack中配置optimization:{splitChunks:'all'}
 
-(1)新建build/webpack.common.js： 新建build文件夹，在此文件夹下新建webpack.common.js，提起公共配置到此文件
+2.不需要什么配置，会自动进行代码分割
 
-```
-const path = require('path');
-const htmlWebpackPlugin = require('html-webpack-plugin');
-const cleanWebpackPlugin = require('clean-webpack-plugin');
-module.exports = {
-  entry: {
-    main: './src/index.js'
-  },
-  module: {
-    rules: [
-      {
-        test: /\.css$/,
-        use: ['style-loader','css-loader']
-      },
-      { 
-        test: /\.js$/, 
-        exclude: /node_modules/, 
-        loader: "babel-loader" 
-      }
-    ]
-  },
-  plugins: [
-    new htmlWebpackPlugin({
-      template: 'src/index.html'
-    }),
-    new cleanWebpackPlugin()
-  ],
-  output: {
-    filename: '[name].js',
-    path: path.resolve(__dirname,'dist')
+
+> 分割线-------------------------------------
+
+Code Splitting 的核心是把很大的文件，分离成更小的块，让浏览器进行并行加载。常见的代码分割有三种形式：
+
+收到进行分割，例如项目如果用到lodash（一个公用库），则把lodash单独打包成一个文件。
+同步导入的代码使用webpack配置进行代码分割。
+异步导入的代码，通过模块中的内联函数调用来分割代码。
+修改index.js代码： 在使用 npm 安装lodash后，修改index.js文件
+
+import _ from 'lodash'
+console.log(_.join(['Dell','Lee'], ' '));
+
+# 同步导入代码分割
+TIP
+
+在webpack.common.js中配置splitChunks属性即可
+
+optimization: {
+  splitChunks: {
+    chunks: 'all'
   }
 }
-````
-
-(2) 新建build/webpack.dev.js： 保留开发环境独有的配置
-
-```
-const webpack = require('webpack');
-module.exports = {
-  mode: 'development',
-  devtool: 'cheap-module-eval-source-map',
-  devServer: {
-    // 启动bundle文件夹
-    contentBase: './dist',
-    // 自动打开浏览器
-    open: true,
-    // 端口3000
-    port: 3000,
-    // 模块热更新
-    hot: true,
-    hotOnly: true
-  },
-  plugins: [
-    new webpack.HotModuleReplacementPlugin()
-  ],
-  optimization: {
-    usedExports: true
-  }
-}
-```
-
-(3)新建build/webpack.prod.js： 保留生产环境独有的配置
-
-```
-module.exports = {
-  mode: 'production',
-  devtool: 'cheap-module-source-map'
-}
-```
-webpack-merge
-
-利用webpack-merge进行文件合并，它需要用 npm 进行安装
-
-$ npm install webpack-merge -D
-(4)再次改造build/webpack.dev.js： 通过webpack-merge进行文件合并
-
-```
-const webpack = require('webpack');
-const merge = require('webpack-merge');
-const commonConfig = require('./webpack.common');
-const devConfig = {
-  mode: 'development',
-  devtool: 'cheap-module-eval-source-map',
-  devServer: {
-    // 启动bundle文件夹
-    contentBase: './bundle',
-    // 自动打开浏览器
-    open: true,
-    // 端口3000
-    port: 3000,
-    // 模块热更新
-    hot: true,
-    hotOnly: true
-  },
-  plugins: [
-    new webpack.HotModuleReplacementPlugin()
-  ],
-  optimization: {
-    usedExports: true
-  }
-}
-module.exports = merge(commonConfig, devConfig);
-```
-
-(5)再次改造build/webpack.prod.js： 通过webpack-merge进行文件合并
-
-```
-const merge = require('webpack-merge');
-const commonConfig = require('./webpack.common');
-const prodConfig = {
-  mode: 'production',
-  devtool: 'cheap-module-source-map'
-}
-module.exports = merge(commonConfig, prodConfig);
-```
-(6)# 添加脚本命令
-
-2.TIP
-
-> 通过更改package.json文件，添加dev和build 两个Script脚本命令
-
-"scripts": {
-  "dev": "webpack-dev-server --config ./build/webpack.dev.js",
-  "build": "webpack --config ./build/webpack.prod.js"
-},
-注意
-
-当我们运行npm run build时，dist目录打包到了build文件夹下了，这是因为我们把webpack相关的配置放到了build文件夹下后，并没有做其他配置，webpack会认为build文件夹会是根目录
-
-|-- build
-|   |-- dist
-|   |   |-- index.html
-|   |   |-- main.js
-|   |   |-- main.js.map
-|   |-- webpack.common.js
-|   |-- webpack.dev.js
-|   |-- webpack.prod.js
-|-- package-lock.json
-|-- package.json
-|-- postcss.config.js
--- src
-    |-- index.html
-    |-- index.js
-    |-- math.js
-再次修改build/webpack.common.js： 修改output属性即可
-
-output: {
-  filename: '[name].js',
-  path: path.resolve(__dirname,'../dist')
-}
-打包结果：
+打包结果： main.js中是我们的业务代码，vendors~main.js是我们的公用库代码
 
 |-- build
 |   |-- webpack.common.js
@@ -168,7 +40,7 @@ output: {
 |-- dist
 |   |-- index.html
 |   |-- main.js
-|   |-- main.js.map
+|   |-- vendors~main.js
 |-- package-lock.json
 |-- package.json
 |-- postcss.config.js
@@ -176,3 +48,67 @@ output: {
     |-- index.html
     |-- index.js
     |-- math.js
+# 异步导入代码分割
+TIP
+
+异步带入的代码，不需要我们进行代码分割，webpack会自动帮我们把第三方库单独打包成一个文件
+
+WARNING
+
+由于异步带入语法目前并没有得到全面支持，需要通过 npm 安装 @babel/plugin-syntax-dynamic-import 插件来进行转译
+
+$ npm install @babel/plugin-syntax-dynamic-import -D
+打包结果： 使用npm run build进行打包，0.js为第三方库打包的代码，main.js为我们的业务代码
+
+|-- build
+|   |-- webpack.common.js
+|   |-- webpack.dev.js
+|   |-- webpack.prod.js
+|-- dist
+|   |-- 0.js
+|   |-- index.html
+|   |-- main.js
+|-- package-lock.json
+|-- package.json
+|-- postcss.config.js
+|-- src
+    |-- index.html
+    |-- index.js
+    |-- math.js
+# SplitChunksPlugin配置参数详解
+在上一节中，我们配置了splitChunk属性，它能让我们进行代码分割，其实这是因为 Webpack 底层使用了 splitChunksPlugin 插件。这个插件有很多可以配置的属性，它也有一些默认的配置参数，它的默认配置参数如下所示，我们将在下面为一些常用的配置项做一些说明。
+
+module.exports = {
+  //...其它配置项
+  optimization: {
+    splitChunks: {
+      chunks: 'async',
+      minSize: 30000,
+      maxSize: 0,
+      minChunks: 1,
+      maxAsyncRequests: 5,
+      maxInitialRequests: 3,
+      automaticNameDelimiter: '~',
+      name: true,
+      cacheGroups: {
+        vendors: {
+          test: /[\\/]node_modules[\\/]/,
+          priority: -10
+        },
+        default: {
+          minChunks: 2,
+          priority: -20,
+          reuseExistingChunk: true
+        }
+      }
+    }
+  }
+};
+# chunks参数
+TIP
+
+chunks参数，它告诉webpack应该对哪些模式进行打包，它的参数有三种：
+
+async，此值为默认值，只有异步导入的代码才会进行代码分割。
+initial，与async相对，只有同步引入的代码才会进行代码分割。
+all，此值可以看做是async和inintal的结合，表示无论是同步的代码还是异步的代码，都能进行代码分割。

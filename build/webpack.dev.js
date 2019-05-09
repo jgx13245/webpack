@@ -1,11 +1,12 @@
 const webapck = require('webpack')
 const merge  = require('webpack-merge')
 const commonConfig = require('./webpack.common.js')
+
 const devConfig= {
   mode: 'development', // 区分是什么环境，，避免报错
   devtool:'cheap-module-eval-source-map',
   devServer:{
-    port:8080,
+    port:8081,
     contentBase:'./dist',
     hot:true,
     // hotOnly:true
