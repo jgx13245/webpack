@@ -10,5 +10,15 @@
 第二种打包方式，将外部库和业务代码，分成两个js的文件，这样就是两个1mb的文件。修改业务时候，用户不需要重新加载两mb的
 文件，
 */
-import test from './test.js'
-console.log(test.name)
+async function getComponet() {
+  const { default: _ }  = await import(/* webpackChunkName: 'lodash' */ 'lodash');
+  var element = document.createElement('div');
+  element.innerHTML = _.join(['1', '2', '3'], '**')
+  return element;
+}
+
+document.addEventListener('click', () => {
+  getComponet().then(element => {
+    document.body.appendChild(element);
+  })
+})

@@ -31,13 +31,13 @@ const devConfig = {
         vendors: {
           test: /[\\/]node_modules[\\/]/,
           priority: -10,
-          filename:'vendor.js'
+          name:'vendor'
         },
         default: {
           // minChunks: 2,
           priority: -20,
           reuseExistingChunk: true,
-          filename:'common.js'
+          // name:'common'
         }
       }
     }
