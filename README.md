@@ -95,13 +95,13 @@ module.exports = {
         vendors: {
           test: /[\\/]node_modules[\\/]/,
           priority: -10   // 值越大。越服从谁，比如一个loadsh的包，符合第一个组，也符合默认，就看priority的值，越大就听谁的
-          filename:'vender.js'
+          name:'vender.js'
         },
         default: {  // 如果模块那个分组都不满足，就默认打包成common.js形式
           minChunks: 2,
           priority: -20,
           reuseExistingChunk: true  // 如果一个模块已经被打包了，在遇到的时候，就忽略掉，直接使用以前的的打包
-          filename:'common.js'
+          name:'common.js'
         }
       }
     }

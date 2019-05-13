@@ -21,7 +21,6 @@ const devConfig = {
     splitChunks: {
       chunks: 'all',
       minSize: 0,
-      maxSize: 0,
       minChunks: 1,
       maxAsyncRequests: 5,
       maxInitialRequests: 3,
@@ -31,13 +30,12 @@ const devConfig = {
         vendors: {
           test: /[\\/]node_modules[\\/]/,
           priority: -10,
-          filename:'vendor.js'
+          name:'vendor.js'
         },
         default: {
           // minChunks: 2,
           priority: -20,
           reuseExistingChunk: true,
-          filename:'common.js'
         }
       }
     }
