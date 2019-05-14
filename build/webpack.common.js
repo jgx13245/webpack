@@ -8,7 +8,8 @@ module.exports = {
   }, // 入口文件
   output: { //输出文件
     filename: '[name].js',
-    path: path.resolve(__dirname, '../dist') // path 会在根目录生成一个dist的文件
+    chunkFilename:'[name].chunk.js',
+    path: path.resolve(process.cwd(), 'dist'),
   },
   // 添加各种laoder 
   module: {
@@ -31,32 +32,6 @@ module.exports = {
         }
       },
       // css-loader部分解析
-      {
-        test: /\.scss$/,
-        use: ['style-loader',
-          {
-            loader: 'css-loader',
-            options: {
-              importLoaders: 2
-            }
-          },
-          'sass-loader',
-          'postcss-loader'
-        ]
-      },
-      {
-        test: /\.css$/,
-        use: ['style-loader',
-          {
-            loader: 'css-loader',
-            options: {
-              importLoaders: 2
-            }
-          },
-          'sass-loader',
-          'postcss-loader'
-        ]
-      }
     ]
   },
   // 插件部分
@@ -67,6 +42,7 @@ module.exports = {
    new CleanWebpackPlugin(),
   ],
   optimization:{
+    usedExports:true,
     splitChunks:{
       chunks:'all'
     }

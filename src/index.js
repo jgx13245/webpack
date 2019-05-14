@@ -9,12 +9,8 @@
 
 第二种打包方式，将外部库和业务代码，分成两个js的文件，这样就是两个1mb的文件。修改业务时候，用户不需要重新加载两mb的
 文件，
-
-
 */
-// Prefetching代码预加载    方法里面的注释是魔法注释，生效的。
-document.addEventListener('click', () => {
- import(/* webpackPrefetch: true */ './click.js').then(({default:func}) => {
-   func()
- }) 
-})
+import './style.css'
+import './style1.css'
+
+console.log(123)

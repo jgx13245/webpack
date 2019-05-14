@@ -1,46 +1,127 @@
-#打包分析，preloading,prefetching
+# css文件打包分割
 
-1.打包分析，主要是看页面的webpack的打包性能，比如打好包以后的js利用率。
-打开任何页面的控制台输入command+shift+p  弹出一个小弹框，在小弹框里面输入 cove。然后
-底部会出现一个菜单栏。把最左面的小点点成红点。就可以看到每个打包好的js文件的利用率。也可以
-在官网打开
+> 官网 https://webpack.js.org/plugins/mini-css-extract-plugin/#root
 
-https://www.webpackjs.com/guides/code-splitting/#bundle-%E5%88%86%E6%9E%90-bundle-analysis-
+> TIP
 
+当我们在使用style-loader和css-loader打包.css文件时会直接把CSS文件打包进.js文件中，然后直接把样式通过<style></style>的方式写在页面，如果我们要把CSS单独打包在一起，然后通过link标签引入，那么可以使用mini-css-extract-plugin插件进行打包
 
-2.现在提升性能，不要单纯的靠缓存提升，而是要提升打包的js文件利用率来提高，利用率越高，打开页面速度越快，
-代码分割里面，chunk默认值是async，异步优先。
+> WARNING
 
-**因为同步代码，都是先加载。后面操作很快，现在流行是首页打开很快，提高性能**
+截止到写此文档时，插件已经开发环境支持HMR，详情可以看官网的demo，这里我们配置生产模式的css代码分割
 
-3.只有当我们在页面点击时才会加载lodash，也有一些模块虽然是异步导入的，但我们希望能提前进行加载，PreLoading和Prefetching
-可以帮助我们实现这一点，但它们还有一个区别在于：
-
-> Prefetching不会跟随主进程一些下载，而是等到主进程加载完毕，带宽释放后才进行加载(推荐)，PreLoading会随主进程一起加载。
-
-
-4.实际操作
-
-新建立一个click.js的文件
+1. 新建src/style.css文件： 在 src 目录下新建style.css文件并写如下样式
 
 ```
-// click.js
-export default function handleClick() {
-  var element = document.createElement('div');
-  element.innerHTML = 'xin';
-  document.body.appendChild(element);
+body {
+  background-color: green;
 }
 ```
 
-在index.js里面
+2. npm install mini-css-extract-plugin --save
 
+在prod的配置中，
+（1）
 ```
-// Prefetching代码预加载    方法里面的注释是魔法注释，生效的。
-document.addEventListener('click', () => {
- import(/* webpackPrefetch: true */ './click.js').then(({default:func}) => {
-   func()
- }) 
-})
+const OptimizeCSSAssetsPlugin = require('mini-css-extract-plugin');
 ```
 
-魔法注释可以更改。一般建议使用webpackPrefetch: true
+ (2) style-loader替换成MiniCssExtractPlugin.loader
+```
+module:{
+    rules:[
+      {
+        test: /\.scss$/,
+        use: [MiniCssExtractPlugin.loader,
+          {
+            loader: 'css-loader',
+            options: {
+              importLoaders: 2
+            }
+          },
+          'sass-loader',
+          'postcss-loader'
+        ]
+      },
+      {
+        test: /\.css$/,
+        use: [MiniCssExtractPlugin.loader,
+          {
+            loader: 'css-loader',
+            options: {
+              importLoaders: 2
+            }
+          },
+          'sass-loader',
+          'postcss-loader'
+        ]
+      }
+    ]
+  },
+```
+(3)
+```
+ plugins: [
+    new MiniCssExtractPlugin({})
+  ]
+```
+3.改写index.js： 改写index.js文件，通过import引入我们所写的CSS文件。
+
+```
+import './style.css';
+console.log('hello,world');
+```
+
+**通过npm run build 打包，并没有发现在dist里面生成css的文件，原因是Tree Shaking的副作用，应该在package.json中添加属性sideEffects:['*.css']**
+修改好以后，发现在打包在dist里面就生成了css的文件
+
+4.压缩css代码
+
+我们再在src目录下新建style1.css文件，内容如下：
+
+```
+body{
+  line-height: 100px;
+}
+```
+在index.js文件中引入此CSS文件
+
+```
+import './style.css';
+import './style1.css';
+console.log('hello,world');
+```
+
+
+打包结果： 我们发现，虽然插件帮我们把CSS打包在了一个文件，但并没有合并压缩。
+
+```
+body {
+  background-color: green;
+}
+body{
+  line-height: 100px;
+}
+
+/*# sourceMappingURL=main.css.map*/
+```
+
+>要想把CSS文件进行合并压缩，需要安装optimize-css-assets-webpack-plugin插件
+
+npm install optimize-css-assets-webpack-plugin --save
+
+```
+const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
+
+optimization: {
+    minimizer: [
+      new OptimizeCSSAssetsPlugin({})
+    ]
+  },
+```
+
+打包结果： 再次使用npm run build进行打包，打包结果如下所示，可以看见，两个CSS文件的代码已经压缩合并了。
+
+```
+body{background-color:green;line-height:100px}
+```
