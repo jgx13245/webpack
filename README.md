@@ -1,4 +1,4 @@
-#打包分析，preloading,prefetching
+# 打包分析，preloading,prefetching
 
 1.打包分析，主要是看页面的webpack的打包性能，比如打好包以后的js利用率。
 打开任何页面的控制台输入command+shift+p  弹出一个小弹框，在小弹框里面输入 cove。然后
