@@ -3,11 +3,9 @@
 > 官网 https://webpack.js.org/plugins/mini-css-extract-plugin/#root
 
 > TIP
-
 当我们在使用style-loader和css-loader打包.css文件时会直接把CSS文件打包进.js文件中，然后直接把样式通过<style></style>的方式写在页面，如果我们要把CSS单独打包在一起，然后通过link标签引入，那么可以使用mini-css-extract-plugin插件进行打包
 
 > WARNING
-
 截止到写此文档时，插件已经开发环境支持HMR，详情可以看官网的demo，这里我们配置生产模式的css代码分割
 
 1. 新建src/style.css文件： 在 src 目录下新建style.css文件并写如下样式
@@ -18,10 +16,11 @@ body {
 }
 ```
 
-2. npm install mini-css-extract-plugin --save
+2. 在prod的配置中
 
-在prod的配置中，
-（1）
+
+（1）npm install mini-css-extract-plugin --save
+
 ```
 const OptimizeCSSAssetsPlugin = require('mini-css-extract-plugin');
 ```
