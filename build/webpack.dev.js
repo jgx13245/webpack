@@ -51,6 +51,10 @@ const devConfig = {
     splitChunks: {
       chunks: 'all',
     }
-  }
+  },
+  output: { //输出文件
+    filename: '[name].js',
+    chunkFilename:'[name].chunk.js',
+  },
 }
 module.exports = merge(commonConfig, devConfig)

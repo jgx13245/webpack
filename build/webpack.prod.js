@@ -4,8 +4,12 @@ const commonConfig = require('./webpack.common.js')
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 
 const prodConfig= {
+  output:{
+    filename:'[name].[contenthash].js',
+    chunkFilename:'[name].[contenthash].js'
+  },
   mode: 'production', // 区分是什么环境，，避免报错
-  devtool:'cheap-module-source-map',
+  // devtool:'cheap-module-source-map',
   module:{
     rules:[
       {
@@ -36,6 +40,7 @@ const prodConfig= {
       }
     ]
   },
+  performance:false,
   optimization: {
     minimizer: [new OptimizeCSSAssetsPlugin({})],
   },

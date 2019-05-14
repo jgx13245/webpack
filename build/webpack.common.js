@@ -7,8 +7,6 @@ module.exports = {
     main:'./src/index.js',
   }, // 入口文件
   output: { //输出文件
-    filename: '[name].js',
-    chunkFilename:'[name].chunk.js',
     path: path.resolve(process.cwd(), 'dist'),
   },
   // 添加各种laoder 

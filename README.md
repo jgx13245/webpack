@@ -1,126 +1,84 @@
-# css文件打包分割
+# Webpack和浏览器缓存(Caching)
 
-> 官网 https://webpack.js.org/plugins/mini-css-extract-plugin/#root
-
-> TIP
-当我们在使用style-loader和css-loader打包.css文件时会直接把CSS文件打包进.js文件中，然后直接把样式通过<style></style>的方式写在页面，如果我们要把CSS单独打包在一起，然后通过link标签引入，那么可以使用mini-css-extract-plugin插件进行打包
-
-> WARNING
-截止到写此文档时，插件已经开发环境支持HMR，详情可以看官网的demo，这里我们配置生产模式的css代码分割
-
-1. 新建src/style.css文件： 在 src 目录下新建style.css文件并写如下样式
+在讲这一小节之前，让我们清理下项目目录，改写下我们的index.js，删除掉一些没用的文件
 
 ```
-body {
-  background-color: green;
+import _ from 'lodash';
+
+var dom = document.createElement('div');
+dom.innerHTML = _.join(['Dell', 'Lee'], '---');
+document.body.append(dom);
+```
+
+清理后的项目目录可能是这样的：
+
+```
+|-- build
+|   |-- webpack.common.js
+|   |-- webpack.dev.js
+|   |-- webpack.prod.js
+|-- package-lock.json
+|-- package.json
+|-- postcss.config.js
+|-- src
+    |-- index.html
+    |-- index.js
+
+```
+我们使用npm run build打包命令，打包我们的代码，可能会生成如下的文件
+
+```
+|-- build
+|   |-- webpack.common.js
+|   |-- webpack.dev.js
+|   |-- webpack.prod.js
+|-- dist
+|   |-- index.html
+|   |-- main.js
+|   |-- vendors~main.chunk.js
+|-- package-lock.json
+|-- package.json
+|-- postcss.config.js
+|-- src
+    |-- index.html
+    |-- index.js
+ ```
+
+**我们可以看到，打包生成的dist目录下，文件名是main.js和vendors~main.chunk.js，如果我们把dist目录放在服务器部署的话，当用户第一次访问页面时，浏览器会自动把这两个.js文件缓存起来，下一次非强制性刷新页面时，会直接使用缓存起来的文件。**
+**假如，我们在用户第一次刷新页面和第二次刷新页面之间，我们修改了我们的代码，并再一次部署，这个时候由于浏览器缓存了这两个.js文件，所以用户界面无法获取最新的代**
+**那么，我们有办法能解决这个问题呢，答案是[contenthash]占位符，它能根据文件的内容，在每一次打包时生成一个唯一的hash值，只要我们文件发生了变动，就重新生成一个hash值，没有改动的话，[contenthash]则不会发生变动，可以在output中进行配置，如下所示**
+
+```
+// 开发环境下的output配置还是原来的那样，因为开发环境下，我们不用考虑缓存问题
+output: {
+  filename: '[name].js',
+  chunkFileName: '[name].chunk.js',
+  path: path.resolve(__dirname,'../dist')
+}
+
+// 生产环境下的output配置
+output: {
+  filename: '[name].[contenthash].js',
+  chunkFilename: '[name].[contenthash].chunk.js',
+  path: path.resolve(__dirname,'../dist')
 }
 ```
 
-2. 在prod的配置中
-
-
-（1）npm install mini-css-extract-plugin --save
+打包结果： 使用npm install build进行打包，结果如下所示，可以看到每一个.js文件都有一个唯一的hash值，这样配置后就能有效解决浏览器缓存的问题。
 
 ```
-const OptimizeCSSAssetsPlugin = require('mini-css-extract-plugin');
-```
-
- (2) style-loader替换成MiniCssExtractPlugin.loader
-```
-module:{
-    rules:[
-      {
-        test: /\.scss$/,
-        use: [MiniCssExtractPlugin.loader,
-          {
-            loader: 'css-loader',
-            options: {
-              importLoaders: 2
-            }
-          },
-          'sass-loader',
-          'postcss-loader'
-        ]
-      },
-      {
-        test: /\.css$/,
-        use: [MiniCssExtractPlugin.loader,
-          {
-            loader: 'css-loader',
-            options: {
-              importLoaders: 2
-            }
-          },
-          'sass-loader',
-          'postcss-loader'
-        ]
-      }
-    ]
-  },
-```
-(3)
-```
- plugins: [
-    new MiniCssExtractPlugin({})
-  ]
-```
-3.改写index.js： 改写index.js文件，通过import引入我们所写的CSS文件。
-
-```
-import './style.css';
-console.log('hello,world');
-```
-
-**通过npm run build 打包，并没有发现在dist里面生成css的文件，原因是Tree Shaking的副作用，应该在package.json中添加属性sideEffects:['*.css']**
-修改好以后，发现在打包在dist里面就生成了css的文件
-
-4.压缩css代码
-
-我们再在src目录下新建style1.css文件，内容如下：
-
-```
-body{
-  line-height: 100px;
-}
-```
-在index.js文件中引入此CSS文件
-
-```
-import './style.css';
-import './style1.css';
-console.log('hello,world');
-```
-
-
-打包结果： 我们发现，虽然插件帮我们把CSS打包在了一个文件，但并没有合并压缩。
-
-```
-body {
-  background-color: green;
-}
-body{
-  line-height: 100px;
-}
-
-/*# sourceMappingURL=main.css.map*/
-```
-
->要想把CSS文件进行合并压缩，需要安装optimize-css-assets-webpack-plugin插件
-
-npm install optimize-css-assets-webpack-plugin --save
-
-```
-const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
-
-optimization: {
-    minimizer: [
-      new OptimizeCSSAssetsPlugin({})
-    ]
-  },
-```
-
-打包结果： 再次使用npm run build进行打包，打包结果如下所示，可以看见，两个CSS文件的代码已经压缩合并了。
-
-```
-body{background-color:green;line-height:100px}
+|-- build
+|   |-- webpack.common.js
+|   |-- webpack.dev.js
+|   |-- webpack.prod.js
+|-- dist
+|   |-- index.html
+|   |-- main.8bef05e11ca1dc804836.js
+|   |-- vendors~main.20137a4ad072bc0461a8.chunk.js
+|-- package-lock.json
+|-- package.json
+|-- postcss.config.js
+|-- src
+    |-- index.html
+    |-- index.js
 ```

@@ -10,7 +10,12 @@
 第二种打包方式，将外部库和业务代码，分成两个js的文件，这样就是两个1mb的文件。修改业务时候，用户不需要重新加载两mb的
 文件，
 */
-import './style.css'
-import './style1.css'
 
-console.log(123)
+import $ from 'jquery'
+import _ from 'lodash'
+
+const dom = $('<div>')
+dom.html(_.join(['xin','guang','121'],'--'))
+$('body').append(dom)
+
+
