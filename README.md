@@ -1,84 +1,106 @@
-# Webpack和浏览器缓存(Caching)
+# Shimming
 
-在讲这一小节之前，让我们清理下项目目录，改写下我们的index.js，删除掉一些没用的文件
+>有时候我们在引入第三方库的时候，不得不处理一些全局变量的问题，例如jQuery的$，lodash的_，但由于一些老的第三方库不能直接修改它的代码，这时我们能不能定义一个全局变量，当文件中存在$或者_的时候自动的帮他们引入对应的包。
+
+**解决办法**
+
+1.这个问题，可以使用ProvidePlugin插件来解决，这个插件已经被Webpack内置，无需安装，直接使用即可。
+
+添加src/jquery.ui.js文件： 在src目录下新建jquery.ui.js文件，代码如下所示，它使用了jQuery的$符号，创建这个文件，目的是为了来模仿第三方库。
+
+```
+export function UI() {
+  $('body').css('background','green');
+}
+```
+
+修改index.js文件： 改写index.js文件，并在其中引入我们的jquery.ui.js文件
 
 ```
 import _ from 'lodash';
+import $ from 'jquery';
+import { UI } from './jquery.ui';
 
-var dom = document.createElement('div');
-dom.innerHTML = _.join(['Dell', 'Lee'], '---');
-document.body.append(dom);
+UI();
+
+var dom = $('<div>');
+dom.html(_.join(['Dell', 'Lee'], '---'));
+$('body').appendChild(dom);
 ```
 
-清理后的项目目录可能是这样的：
+- 打包结果： 使用npm run dev进行打包，会发现，代码运行不起来，报错$ is not defined，这是因为虽然我们在index.js中引入的jQuery文件，但$符号只能在index.js才有效，在jquery.ui.js无效，报错是因为jquery.ui.js中$符号找不到引起的。因为模块化，每个模块只认识自己的变量。
+
+
+2.改写webpack.common.js文件： 在webpack.common.js文件中使用ProvidePlugin插件
+
+TIP
+
+配置$:'jquery'，只要我们文件中使用了$符号，它就会自动帮我们引入jquery，相当于import $ from 'jquery'
 
 ```
-|-- build
-|   |-- webpack.common.js
-|   |-- webpack.dev.js
-|   |-- webpack.prod.js
-|-- package-lock.json
-|-- package.json
-|-- postcss.config.js
-|-- src
-    |-- index.html
-    |-- index.js
-
-```
-我们使用npm run build打包命令，打包我们的代码，可能会生成如下的文件
-
-```
-|-- build
-|   |-- webpack.common.js
-|   |-- webpack.dev.js
-|   |-- webpack.prod.js
-|-- dist
-|   |-- index.html
-|   |-- main.js
-|   |-- vendors~main.chunk.js
-|-- package-lock.json
-|-- package.json
-|-- postcss.config.js
-|-- src
-    |-- index.html
-    |-- index.js
- ```
-
-**我们可以看到，打包生成的dist目录下，文件名是main.js和vendors~main.chunk.js，如果我们把dist目录放在服务器部署的话，当用户第一次访问页面时，浏览器会自动把这两个.js文件缓存起来，下一次非强制性刷新页面时，会直接使用缓存起来的文件。**
-**假如，我们在用户第一次刷新页面和第二次刷新页面之间，我们修改了我们的代码，并再一次部署，这个时候由于浏览器缓存了这两个.js文件，所以用户界面无法获取最新的代**
-**那么，我们有办法能解决这个问题呢，答案是[contenthash]占位符，它能根据文件的内容，在每一次打包时生成一个唯一的hash值，只要我们文件发生了变动，就重新生成一个hash值，没有改动的话，[contenthash]则不会发生变动，可以在output中进行配置，如下所示**
-
-```
-// 开发环境下的output配置还是原来的那样，因为开发环境下，我们不用考虑缓存问题
-output: {
-  filename: '[name].js',
-  chunkFileName: '[name].chunk.js',
-  path: path.resolve(__dirname,'../dist')
-}
-
-// 生产环境下的output配置
-output: {
-  filename: '[name].[contenthash].js',
-  chunkFilename: '[name].[contenthash].chunk.js',
-  path: path.resolve(__dirname,'../dist')
+const htmlWebpackPlugin = require('html-webpack-plugin');
+const cleanWebpackPlugin = require('clean-webpack-plugin');
+const webpack = require('webpack');
+module.exports = {
+  entry: {
+    main: './src/index.js'
+  },
+  plugins: [
+    new htmlWebpackPlugin({
+      template: 'src/index.html'
+    }),
+    new cleanWebpackPlugin(),
+    new webpack.ProvidePlugin({
+      $: 'jquery',
+      _: 'lodash'
+    })
+  ]
 }
 ```
 
-打包结果： 使用npm install build进行打包，结果如下所示，可以看到每一个.js文件都有一个唯一的hash值，这样配置后就能有效解决浏览器缓存的问题。
+打包结果： 使用npm run dev进行打包，打包结果如下，可以发现，项目已经可以正确运行了。 
+
+
+# 处理全局this指向问题
+
+我们现在来思考一个问题，一个模块中的this到底指向什么，是模块自身还是全局的window对象
+
+// index.js代码，在浏览器中输出：false
 
 ```
-|-- build
-|   |-- webpack.common.js
-|   |-- webpack.dev.js
-|   |-- webpack.prod.js
-|-- dist
-|   |-- index.html
-|   |-- main.8bef05e11ca1dc804836.js
-|   |-- vendors~main.20137a4ad072bc0461a8.chunk.js
-|-- package-lock.json
-|-- package.json
-|-- postcss.config.js
-|-- src
-    |-- index.html
-    |-- index.js
+console.log(this===window);
 ```
+如上所示，如果我们使用npm run dev运行项目，运行index.html时，会在浏览器的console面板输出false，证明在模块中this指向模块自身，而不是全局的window对象，那么我们有什么办法来解决这个问题呢？
+
+**解决办法**
+
+安装使用imports-loader来解决这个问题
+
+> $ npm install imports-loader -D
+
+改写webpack.common.js文件： 在.js的loader处理中，添加imports-loader
+
+```
+module.exports = {
+  // ... 其他配置
+  module: {
+    rules: [
+      { 
+        test: /\.js$/, 
+        exclude: /node_modules/, 
+        use: [
+          {
+            loader: 'babel-loader'
+          },
+          {
+            loader: 'imports-loader?this=>window'
+          }
+        ]
+      }
+    ]
+  },
+  // ... 其他配置
+}
+```
+
+打包结果： 使用npm run dev来进行打包，运行index.html，查看console控制台，输出true，证明this这个时候已经指向了全局window对象，问题解决。 

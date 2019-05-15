@@ -11,11 +11,12 @@
 文件，
 */
 
-import $ from 'jquery'
-import _ from 'lodash'
+import _ from 'lodash';
+import $ from 'jquery';
+import { UI } from './jquery.ui';
 
-const dom = $('<div>')
-dom.html(_.join(['xin','guang','121'],'--'))
-$('body').append(dom)
+UI();
 
-
+var dom = $('<div>');
+dom.html(_.join(['xin', 'ji'], '---'));
+$('body').append(dom);
