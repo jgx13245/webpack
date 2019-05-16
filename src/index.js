@@ -11,12 +11,16 @@
 文件，
 */
 
-import _ from 'lodash';
-import $ from 'jquery';
-import { UI } from './jquery.ui';
+console.log(1234)
 
-UI();
-
-var dom = $('<div>');
-dom.html(_.join(['xin', 'ji'], '---'));
-$('body').append(dom);
+if('serviceWorker' in navigator) {
+  window.addEventListener('load',() => {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(registration => {
+        console.log('pwa 成功')
+      })
+      .catch(error => {
+        console.log('pwa 失败')
+      })
+  })
+}
