@@ -1,16 +1,18 @@
 import React, { Component } from 'react';
 import ReactDom from 'react-dom';
-import axios from 'axios';
+import { BrowserRouter, Route } from 'react-router-dom'
+import List from './list'
+import Home from './home'
+
 
 class App extends Component {
-
-	componentDidMount() {
-		axios.get('/mock/5bf4d27d58cc81351fa1f082/example/payInterval').then(res => {
-			console.log(res)
-		})
-	}	
 	render() {
-		return <div>Hello World</div>
+		return(
+			<BrowserRouter>
+				<Route path="/"  exact component={Home}></Route>
+				<Route path="/list" component={List}></Route>
+		</BrowserRouter>
+		)
 	}
 }
 
