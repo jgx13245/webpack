@@ -408,6 +408,7 @@ module.exports = configs;
 
 使用npm run build:dll进行打包第三方库，再使用npm run build打包，打包结果如下:
 
+```
 |-- build
 |   |-- webpack.common.js
 |   |-- webpack.dev.js
@@ -429,5 +430,5 @@ module.exports = configs;
 |-- src
 |   |-- index.html
 |   |-- index.js
-
+```
 - 本次试验，第一次打包时间为1100ms+，后面的打包稳定在800ms+，说明我们的 Webpack性能优化已经生效。
