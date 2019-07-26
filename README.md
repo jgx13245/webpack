@@ -4,7 +4,9 @@
 
 **webpack实现代码分割有两种方式**
 
+
 1.同步的代码。只要在webpack中配置optimization:{splitChunks:'all'}
+
 
 2.不需要什么配置，会自动进行代码分割
 
@@ -13,26 +15,34 @@
 
 Code Splitting 的核心是把很大的文件，分离成更小的块，让浏览器进行并行加载。常见的代码分割有三种形式：
 
-收到进行分割，例如项目如果用到lodash（一个公用库），则把lodash单独打包成一个文件。
-同步导入的代码使用webpack配置进行代码分割。
-异步导入的代码，通过模块中的内联函数调用来分割代码。
+- 外部引入进行分割，例如项目如果用到lodash（一个公用库），则把lodash单独打包成一个文件。
+
+- 同步导入的代码使用webpack配置进行代码分割。
+
+- 异步导入的代码，通过模块中的内联函数调用来分割代码。
+
 修改index.js代码： 在使用 npm 安装lodash后，修改index.js文件
 
+```
 import _ from 'lodash'
 console.log(_.join(['Dell','Lee'], ' '));
+```
 
 # 同步导入代码分割
 TIP
 
 在webpack.common.js中配置splitChunks属性即可
 
+```
 optimization: {
   splitChunks: {
     chunks: 'all'
   }
 }
+```
 打包结果： main.js中是我们的业务代码，vendors~main.js是我们的公用库代码
 
+```
 |-- build
 |   |-- webpack.common.js
 |   |-- webpack.dev.js
@@ -48,6 +58,8 @@ optimization: {
     |-- index.html
     |-- index.js
     |-- math.js
+```
+
 # 异步导入代码分割
 TIP
 
@@ -58,8 +70,9 @@ WARNING
 由于异步带入语法目前并没有得到全面支持，需要通过 npm 安装 @babel/plugin-syntax-dynamic-import 插件来进行转译
 
 $ npm install @babel/plugin-syntax-dynamic-import -D
-打包结果： 使用npm run build进行打包，0.js为第三方库打包的代码，main.js为我们的业务代码
 
+打包结果： 使用npm run build进行打包，0.js为第三方库打包的代码，main.js为我们的业务代码
+```
 |-- build
 |   |-- webpack.common.js
 |   |-- webpack.dev.js
@@ -75,7 +88,10 @@ $ npm install @babel/plugin-syntax-dynamic-import -D
     |-- index.html
     |-- index.js
     |-- math.js
+```
+
 # SplitChunksPlugin配置参数详解
+
 在上一节中，我们配置了splitChunk属性，它能让我们进行代码分割，其实这是因为 Webpack 底层使用了 splitChunksPlugin 插件。这个插件有很多可以配置的属性，它也有一些默认的配置参数，它的默认配置参数如下所示，我们将在下面为一些常用的配置项做一些说明。
 
 ```
