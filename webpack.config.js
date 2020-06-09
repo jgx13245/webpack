@@ -23,15 +23,7 @@ module.exports= {
     // css-loader部分解析
     {
       test:/\.scss$/,
-      use:['style-loader',
-           {
-             loader:'css-loader',
-             options:{
-               importLoaders:2
-             }
-           },
-           'sass-loader',
-           'postcss-loader']
+      use:['style-loader','css-loader', 'sass-loader', 'postcss-loader']
     }]
   }
 }
