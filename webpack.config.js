@@ -6,9 +6,9 @@ module.exports = {
   mode: 'development', // 区分是什么环境，，避免报错
   devtool:'source-map',
   devServer:{
+    port: 8888,
     contentBase:'./dist',
     hot:true,
-    hotOnly:true
   },
   entry: {
     main:'./src/index.js',
@@ -35,29 +35,11 @@ module.exports = {
       // css-loader部分解析
       {
         test: /\.scss$/,
-        use: ['style-loader',
-          {
-            loader: 'css-loader',
-            options: {
-              importLoaders: 2
-            }
-          },
-          'sass-loader',
-          'postcss-loader'
-        ]
+        use: ['style-loader', 'css-loader', 'sass-loader', 'postcss-loader']
       },
       {
         test: /\.css$/,
-        use: ['style-loader',
-          {
-            loader: 'css-loader',
-            options: {
-              importLoaders: 2
-            }
-          },
-          'sass-loader',
-          'postcss-loader'
-        ]
+        use: ['style-loader', 'css-loader', 'sass-loader', 'postcss-loader']
       }
     ]
   },

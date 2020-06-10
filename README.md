@@ -8,7 +8,7 @@
 devServer:{
     contentBase:'./dist',
     hot:true，
-    hotOnly:true  // 即使hmr的功能没有生效，也不让浏览器重新刷新 
+    hotOnly:true  // 即使html的功能没有生效，也不让浏览器重新刷新 
   },
 
 // 最上层引入
