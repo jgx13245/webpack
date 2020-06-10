@@ -1,8 +1,6 @@
 {
-  "presets":[["@babel/preset-env",{
-    "targets": {
-      "chrome": "67",
-    },
-    "useBuiltIns":"usage"
+  "presets": [["@babel/preset-env", {
+    "corejs": 2,// 目的是，按需引入需要的es6补充语法，如果不设置，就是全局引入，包会很大。
+    "useBuiltIns": "usage" // 如果不配置，polyfill补丁会把所有的es补丁补充上，代码打包很大，这个配置上，按需补充，就会很小
   }]]
 }
