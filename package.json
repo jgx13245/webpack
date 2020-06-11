@@ -1,6 +1,6 @@
 {
   "name": "webpack123",
-  "sideEffects":false,
+  "sideEffects": false,
   "version": "1.0.0",
   "description": "",
   "main": "index.js",

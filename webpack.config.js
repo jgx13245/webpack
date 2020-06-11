@@ -75,9 +75,9 @@ module.exports = {
    new webapck.HotModuleReplacementPlugin(),
   ],
   // 加上这个，代表只打包使用的模块。没有引入的就不用了
-  optimization:{
-    usedExports:true
-  }
+  // optimization:{
+  //   usedExports:true
+  // }
 }
 
 
