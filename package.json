@@ -10,11 +10,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "file-loader": "^3.0.1",
-    "webpack": "^4.29.6"
+    "file-loader": "^6.2.0",
+    "webpack": "^5.75.0"
   },
   "devDependencies": {
-    "url-loader": "^1.1.2",
-    "webpack-cli": "^3.3.0"
+    "url-loader": "^4.1.1",
+    "webpack-cli": "^5.0.1"
   }
 }
